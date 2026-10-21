@@ -1,8 +1,8 @@
-# SWE-Pro
+# SWE-Opt
 
 > An evaluation harness for software engineering agents — run, benchmark, and compare LLM-powered coding agents against parametrized performance test in isolated Docker containers.
 > The dataset used in this study is available online at:
-[SWE-Pro Dataset](https://huggingface.co/datasets/probench-swe/SWE-Pro)
+[SWE-Opt Dataset]((https://huggingface.co/datasets/SWE-Opt/SWE-Opt))
 
 ---
 
@@ -19,7 +19,7 @@
 
 ## Overview
 
-SWE-Pro provides a reproducible, containerised evaluation framework for testing and comparing software engineering agents. Each scenario runs inside an isolated Docker container, ensuring consistent, unbiased results across runs and environments.
+SWE_Opt provides a reproducible, containerised evaluation framework for testing and comparing software engineering agents. Each scenario runs inside an isolated Docker container, ensuring consistent, unbiased results across runs and environments.
 
 ---
 
@@ -39,7 +39,7 @@ SWE-Pro provides a reproducible, containerised evaluation framework for testing 
 
 ```bash
 git clone <repo-url>
-cd SWE-Pro
+cd SWE-Opt
 ```
 
 ### 2. Create a Python 3.11 virtual environment
@@ -55,7 +55,7 @@ Verify the environment:
 
 ```bash
 python --version   # Python 3.11.x
-which python       # .../SWE-Pro/.venv/bin/python
+which python       # .../SWE-Opt/.venv/bin/python
 ```
 
 ### 3. Install dependencies
@@ -67,7 +67,7 @@ python -m pip install -e ".[dev]"
 
 ### 4. Install and verify Docker
 
-SWE-Pro runs evaluation scenarios inside Docker containers. Ensure Docker is installed and the daemon is running:
+SWE-Opt runs evaluation scenarios inside Docker containers. Ensure Docker is installed and the daemon is running:
 
 ```bash
 docker --version
