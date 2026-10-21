@@ -42,28 +42,45 @@ git clone <repo-url>
 cd SWE-Opt
 ```
 
-### 2. Create a Python 3.11 virtual environment
+### 2. Install uv
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and run the following commands from the repository root.
+
+### 3. Reproduce the locked Python environment
 
 ```bash
-deactivate 2>/dev/null || true
-rm -rf .venv
-python3.11 -m venv .venv
-source .venv/bin/activate
+uv python install
+uv sync --locked --extra notebook
+uv run --locked python --version
 ```
 
-Verify the environment:
+The committed `.python-version` selects Python **3.11.14**. `pyproject.toml` declares dependencies and `uv.lock` records exact resolved versions. `uv sync --locked` creates `.venv`, installs the project in editable mode, and refuses to update an outdated lockfile. No environment activation is needed when using `uv run`.
+
+For the OpenCode agentic workflow, the default dependencies are sufficient; OpenCode runs inside Docker. Install optional host features only when needed:
+
+```bash
+uv sync --locked --extra notebook --extra openai
+uv sync --locked --extra bm25
+```
+
+Other extras are `anthropic`, `gemini`, `huggingface`, and `zhipu`. The `dev` dependency group is installed by default; use `--no-dev` for a runtime-only environment. BM25 also needs the Java runtime required by the selected Pyserini release.
+
+Launch the quick-start notebook with the same environment:
 
 ```bash
 python --version   # Python 3.11.x
 which python       # .../SWE-Opt/.venv/bin/python
 ```
 
-### 3. Install dependencies
+Run command-line modules through uv, for example:
 
 ```bash
-python -m pip install --upgrade pip setuptools wheel
-python -m pip install -e ".[dev]"
+uv run --locked python -m swe_opt.inference.generate_agentic_patches --help
 ```
+
+When deliberately changing dependencies, update `pyproject.toml`, run `uv lock`, review the changes, and commit both files. Use `uv lock --upgrade` only for intentional dependency upgrades.
+
+**Reproducibility boundary:** this lockfile controls the host Python environment, not benchmark dependencies inside Docker. Keep baseline image digests, dataset versions, model/config settings, prompts, and seeds fixed as well. The instance Dockerfiles currently download OpenCode from its installer; pinning the OpenCode version is a separate step for full agent reproducibility. External model responses and performance measurements can still vary.
 
 ### 4. Install and verify Docker
 
@@ -78,6 +95,38 @@ docker run hello-world
 If Docker is not installed, follow the official installation guide for [Docker Desktop](https://docs.docker.com/desktop/) or [Docker Engine](https://docs.docker.com/engine/install/).
 
 ---
+
+## Usage
+
+### Run the task-only OpenCode agent
+
+The agentic workflow builds a task-only prompt for each benchmark row, then runs OpenCode in a Docker container based on that row's baseline image. It does not require a local dataset download: `--dataset_path` accepts a Hugging Face dataset ID or a local JSON/JSONL file. Hugging Face datasets use the `test` split.
+
+First, start Docker and configure the provider/model in `opencode.docker.json`. The checked-in example uses an OpenAI-compatible provider; set its API key in your shell or project `.env`. Do not place credentials in notebooks or commit them.
+
+Build prompts from the public dataset:
+
+```bash
+uv run --locked python -m swe_opt.prep.prompt.build_task_only_prompts \
+  --dataset_path SWE-Opt/SWE-Opt \
+  --out_root data/prompt \
+  --run_id quickstart_agentic
+```
+
+The builder prints the prompt run directory under `data/prompt/`. Use that exact directory (it contains `PROMPT_META.json` and `instances/`; the name has a short hash suffix) in the inference command:
+
+```bash
+uv run --locked python -m swe_opt.inference.generate_agentic_patches \
+  --prompts_run_dir "data/prompt/<printed-prompt-run-directory>" \
+  --docker_opencode_config opencode.docker.json \
+  --out_root inference/agent \
+  --run_id quickstart_agentic \
+  --max_instances 1
+```
+
+`--max_instances 1` runs a smoke test; remove it to process the full prompt run. The inference runner prints its output directory under `inference/agent/` (the directory name also has a short hash suffix). Pass that exact directory to `swe_opt.harness.run_evaluation`. Use a new `--run_id` when changing prompts, models, or other run settings; the prompt builder refuses to overwrite an existing prompt run.
+
+The prompt builder's `--help` lists its dataset, output-root, and run-ID arguments. The inference runner's `--help` lists model, scenario, timeout, and container resource options. Both commands should be run from the repository root.
 
 ## Configuration
 

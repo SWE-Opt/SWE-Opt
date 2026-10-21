@@ -1,0 +1,39 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+USER root
+
+RUN set -eux; \
+    sed -i \
+      -e 's|http://deb.debian.org/debian-security|http://archive.debian.org/debian-security|g' \
+      -e 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' \
+      /etc/apt/sources.list; \
+    sed -i '/debian-security/d; /-security/d' /etc/apt/sources.list; \
+    printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99no-check-valid; \
+    echo "=== apt sources ==="; cat /etc/apt/sources.list; echo "==="; \
+    for attempt in 1 2 3; do \
+        rm -rf /var/lib/apt/lists/*; \
+        if apt-get update \
+            && apt-get install -y --no-install-recommends \
+                ca-certificates curl git ripgrep tar; then \
+            break; \
+        fi; \
+        if [ "$attempt" = 3 ]; then exit 1; fi; \
+        sleep 10; \
+    done; \
+    rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+    export PATH="/root/.opencode/bin:$PATH"; \
+    for attempt in 1 2 3; do \
+        curl -fSL https://opencode.ai/install -o /tmp/oc.sh && break; \
+        echo "download failed, attempt $attempt"; \
+        sleep 5; \
+    done; \
+    test -s /tmp/oc.sh; \
+    bash /tmp/oc.sh; \
+    rm -f /tmp/oc.sh; \
+    command -v opencode; \
+    opencode --version
+
+ENV PATH="/root/.opencode/bin:${PATH}"

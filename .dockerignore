@@ -82,7 +82,6 @@ dataset_related_scripts_and_data/
 
 # Keep these paths - DO NOT ignore them
 !docker/**
-!probench/**
 !pyproject.toml
 !requirements.txt
 !config/**

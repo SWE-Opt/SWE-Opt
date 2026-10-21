@@ -91,7 +91,13 @@ cython_debug/
 *.env
 *.ini
 *.toml
+!pyproject.toml
 
 # Docker / containers
 *.pid
 *.pid.lock
+
+# Personal
+data/
+inference/
+results_experiments_valid/

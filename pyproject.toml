@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "swe-opt"
+version = "0.1.0"
+description = "Containerized evaluation of software engineering performance agents"
+readme = "README.md"
+requires-python = ">=3.10,<3.12"
+dependencies = [
+    "datasets>=2,<5",
+    "gitpython>=3.1,<4",
+    "numpy>=1.24,<3",
+    "python-dotenv>=1,<2",
+    "pyyaml>=6,<7",
+    "requests>=2.31,<3",
+    "tiktoken>=0.7,<1",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.66,<3"]
+anthropic = ["anthropic>=0.40,<1"]
+gemini = ["google-genai>=1,<2"]
+huggingface = ["huggingface-hub>=0.27,<2", "transformers>=4.45,<5"]
+zhipu = ["zai-sdk>=0.1,<1"]
+bm25 = ["pyserini>=0.25,<1", "tqdm>=4.66,<5"]
+notebook = ["ipykernel>=6,<7", "jupyterlab>=4,<5"]
+
+[dependency-groups]
+dev = ["pytest>=8,<9", "ruff>=0.9,<1", "black>=24,<27"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["swe_opt"]
