@@ -99,5 +99,6 @@ cython_debug/
 
 # Personal
 data/
-inference/
+i_inference
+i_inference_test
 results_experiments_valid/
